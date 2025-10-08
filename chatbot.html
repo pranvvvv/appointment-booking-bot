@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Booking Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #415e7e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .chatbox {
+            width: 380px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        .chat-header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .chatlogs {
+            padding: 20px;
+            height: 350px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 10px;
+            max-width: 75%;
+            word-wrap: break-word;
+        }
+        .chat.user {
+            background: #007bff;
+            color: white;
+            align-self: flex-end;
+        }
+        .chat.bot {
+            background: #f1f1f1;
+            color: black;
+            align-self: flex-start;
+        }
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+            padding: 10px;
+            background: white;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+        }
+        .chat-input button {
+            margin-left: 10px;
+            padding: 10px 15px;
+            border: none;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chatbox">
+    <div class="chat-header">Dr. Prasaana - Appointment Bot</div>
+    <div class="chatlogs" id="chatlogs"></div>
+    <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    let chatState = 'greeting';
+    let userName = '';
+    let appointmentDate = '';
+    let appointmentTime = '';
+    let contactInfo = '';
+
+    function sendMessage() {
+        const userInput = document.getElementById('userInput');
+        let inputText = userInput.value.trim();
+
+        if (!inputText) return;
+
+        appendMessage(inputText, 'user');
+        userInput.value = '';
+
+        setTimeout(() => {
+            handleBotResponse(inputText);
+        }, 500);
+    }
+
+    function handleBotResponse(input) {
+        if (chatState === 'greeting') {
+            appendMessage("Hello! I'm Dr. Prasaana's assistant. What's your name?", 'bot');
+            chatState = 'askName';
+        } else if (chatState === 'askName') {
+            userName = input;
+            appendMessage(`Nice to meet you, ${userName}! When would you like to schedule your appointment? (YYYY-MM-DD)`, 'bot');
+            chatState = 'askDate';
+        } else if (chatState === 'askDate') {
+            appointmentDate = input;
+            appendMessage(`What time would you like to book on ${appointmentDate}? (HH:MM AM/PM)`, 'bot');
+            chatState = 'askTime';
+        } else if (chatState === 'askTime') {
+            appointmentTime = input;
+            appendMessage(`Please provide your contact information (email or phone number).`, 'bot');
+            chatState = 'askContact';
+        } else if (chatState === 'askContact') {
+            contactInfo = input;
+            appendMessage(`Thank you, ${userName}! Your appointment for ${appointmentDate} at ${appointmentTime} is confirmed.`, 'bot');
+            saveAppointment();
+            chatState = 'confirmed';
+        }
+    }
+
+    function appendMessage(message, sender) {
+        const chatlogs = document.getElementById('chatlogs');
+        const chatDiv = document.createElement('div');
+        chatDiv.className = `chat ${sender}`;
+        chatDiv.textContent = message;
+        chatlogs.appendChild(chatDiv);
+        chatlogs.scrollTop = chatlogs.scrollHeight;
+    }
+
+    function saveAppointment() {
+        fetch('/save_appointment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: userName, date: appointmentDate, time: appointmentTime, contact: contactInfo })
+        });
+    }
+</script>
+
+</body>
+</html>
