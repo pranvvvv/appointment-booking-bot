@@ -44,5 +44,4 @@ Notes
 - If MongoDB is on a different URI, set the `MONGO_URI` environment variable or edit `chatbackend.py` app.config before starting.
 - Consider adding authentication and validation before using in production.
 
-License
-- Add your preferred license.
+
